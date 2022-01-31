@@ -1,0 +1,77 @@
+
+:root {
+    --background-color: #F7F7F7;
+    --foreground-color: #8FB399;
+    --column-background: #E0E0E0;
+}
+
+.kanban {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-color);
+    height: 100vh;
+    padding: 0 50px 0 50px;
+}
+
+.kanban .header {
+    text-align: left;
+    font-size: 1.5rem;
+    flex:0;
+}
+
+.kanban .header .title {
+    padding: 0;
+    margin: 0;
+    color: var(--foreground-color);
+}
+
+.kanban .header .description {
+    font-size: 1.3rem;
+    color: gray;
+    padding: 0;
+    margin: 0;
+}
+
+.kanban .body {
+    flex: 3;
+    overflow: clip;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.kanban .column {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 300px;
+    max-width: 300px;
+    min-height: 100%;
+    /* top-left | top-right | bottom-right | bottom-left */
+    border-radius: 0px 0px 10px 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    background-color: var(--column-background);
+}
+
+.kanban .column header {
+    background-color: white;
+    padding: 10px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: black;
+}
+
+.kanban .column section {
+    flex: 3;
+}
+
+.kanban .divider {
+    background-color: #E0E0E0;
+    height: 1px;
+    border-radius: 10px;
+    border: none;
+    width: 100%;
+}
