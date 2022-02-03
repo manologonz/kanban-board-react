@@ -64,8 +64,33 @@
     color: black;
 }
 
-.kanban .column section {
+.kanban .column .task-list {
     flex: 3;
+    padding: 10px;
+    list-style: none;
+    margin: 0;
+}
+
+.kanban .column .task-list:nth-child(n) .task{
+    margin-bottom: 10px;
+}
+
+.kanban .column .task {
+    width: 100%;
+    min-height: 100px;
+    background-color: white;
+    border-radius: 10px;
+}
+
+.kanban .column .task .header{
+    padding: 5px;
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.kanban .column .task .description {
+    padding: 5px;
+    font-size: .9rem;
 }
 
 .kanban .divider {
