@@ -1,5 +1,5 @@
 # React Kanban Board
-A simple kanban board to manage tasks created with CRA and Typescrypt
+A simple kanban board to manage tasks created with CRA and TypeScript
 
 ## Node Version
 Node 16.13.0
