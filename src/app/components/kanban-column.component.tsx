@@ -1,5 +1,5 @@
 import React from "react";
-import { ITask, TaskDragStart, ColumnDropHandler} from "../utils/types";
+import { ITask, TaskDragStart, ColumnDropHandler, ColumnDragEnterHandler, ColumnDragOverHandler, ColumnDragLeaveHandler} from "../utils/types";
 import Task from "./task.component";
 
 type KanbanColumnProps = {
@@ -7,7 +7,10 @@ type KanbanColumnProps = {
     name: string;
     tasks: ITask[];
     handleColumnDrop: ColumnDropHandler;
-    handleColumnDragOver: React.DragEventHandler;
+    handleColumnDragOver: ColumnDragOverHandler;
+    handleColumnEnter: ColumnDragEnterHandler;
+    handleColumnLeave: ColumnDragLeaveHandler
+    isOver: boolean
 };
 
 const KanbanColumn: React.FC<KanbanColumnProps> = (props) => {
@@ -17,6 +20,9 @@ const KanbanColumn: React.FC<KanbanColumnProps> = (props) => {
         tasks,
         handleColumnDrop,
         handleColumnDragOver,
+        handleColumnEnter,
+        handleColumnLeave,
+        isOver
     } = props;
 
     const handleDragStart: TaskDragStart = (taskId, columnId) => {
@@ -27,19 +33,21 @@ const KanbanColumn: React.FC<KanbanColumnProps> = (props) => {
     }
 
     return (
-        <div className="column">
+        <div className={`column${isOver ? " is-drag-over" : ""}`}>
             <header>{name}</header>
             <div
                 id={id}
                 onDrop={handleColumnDrop(id)}
-                onDragOver={handleColumnDragOver}
-                className="task-list"
+                onDragOver={handleColumnDragOver(id)}
+                onDragLeave={handleColumnLeave(id)}
+                className={`task-list`}
             >
                 {tasks.map((task) => {
                     return (
                         <Task
                             key={task.id}
                             onDragStart={handleDragStart(task.id, id)}
+                            onDragEnter={handleColumnEnter(id)}
                             {...task}
                         />
                     );

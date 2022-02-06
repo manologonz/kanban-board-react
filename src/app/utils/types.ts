@@ -6,6 +6,7 @@ export interface ITask {
 
 export interface IColumn {
     id: string,
+    isOver: boolean;
     name: string;
     tasks: ITask[];
 }
@@ -13,6 +14,11 @@ export interface IColumn {
 export type TaskDragStart = (taskId: string, columnId: string)  => React.DragEventHandler;
 
 export type ColumnDropHandler = (columnId: string) => React.DragEventHandler;
+
+export type ColumnDragEnterHandler = (columnId: string) => React.DragEventHandler;
+
+export type ColumnDragOverHandler = (columnId: string) => React.DragEventHandler;
+export type ColumnDragLeaveHandler = (columnId: string) => React.DragEventHandler;
 
 export type GetColumnsFunction = () => IColumn[];
 

@@ -54,6 +54,7 @@
     margin-left: 10px;
     margin-right: 10px;
     background-color: var(--column-background);
+    border: 1px solid transparent;
 }
 
 .kanban .column header {
@@ -99,4 +100,8 @@
     border-radius: 10px;
     border: none;
     width: 100%;
+}
+
+.is-drag-over {
+    border: 1px solid blue !important;
 }

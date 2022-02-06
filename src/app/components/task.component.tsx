@@ -5,14 +5,16 @@ type TaksProps = {
     title: string;
     description: string;
     onDragStart: React.DragEventHandler;
+    onDragEnter: React.DragEventHandler;
 };
 
-const Task: React.FC<TaksProps> = ({ id, title, description, onDragStart }) => {
+const Task: React.FC<TaksProps> = ({ id, title, description, onDragStart, onDragEnter}) => {
     return (
         <div
             id={id}
             draggable={true}
             onDragStart={onDragStart}
+            onDragEnter={onDragEnter}
             className="task"
         >
             <section className="header">{title}</section>
