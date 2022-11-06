@@ -65,6 +65,10 @@
     color: black;
 }
 
+.kanban .column header .add-task-button:hover  {
+    cursor: pointer;
+}
+
 .kanban .column .task-list {
     flex: 3;
     padding: 10px;
@@ -81,6 +85,11 @@
     min-height: 100px;
     background-color: white;
     border-radius: 10px;
+    box-shadow: 0 2px 4px gray;
+}
+
+.kanban .column .task:hover {
+    cursor: grab;
 }
 
 .kanban .column .task .header{
@@ -102,6 +111,121 @@
     width: 100%;
 }
 
+.custom-modal {
+    position: fixed;
+    padding: 0;
+    margin: 0;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.custom-modal .custom-modal__overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    z-index: 1000000;
+}
+
+.custom-modal .custom-modal__overlay .custom-modal__container {
+    position: relative;
+    background: white;
+    width: 70%;
+    max-height: 70%;
+    max-width: 70%;
+    border-radius: 20px;
+    padding: 10px;
+    box-shadow: 0 2px 4px gray;
+}
+
+.custom-modal .custom-modal__overlay .custom-modal__container .custom-modal__header {
+    padding: 10px;
+}
+
+.custom-modal .custom-modal__overlay .custom-modal__container .custom-modal__body {
+    padding: 10px;
+}
+
+
+.custom-modal .custom-modal__overlay .custom-modal__container .custom-modal__footer {
+    padding: 10px;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    margin: 0;
+}
+
 .is-drag-over {
     border: 1px solid blue !important;
+}
+
+.far-away {
+    display: flex;
+    justify-content: space-between;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+
+label {
+    display: inline-block;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+input,
+textarea {
+    font-size: 1rem;
+    border: 1px solid #bebebe;
+    padding: 5px 6px;
+    border-radius: 5px;
+    width: 100%;
+}
+
+textarea {
+    height: 100px;
+    max-height: 150px;
+    resize: none;
+}
+
+.form-control {
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+.d-flex {
+   display: flex;
+}
+
+.justify-content-end {
+    justify-content: end;
+}
+
+.btn {
+    background: #E0E0E0;
+    border-radius: 5px;
+    border: 1px solid #E0E0E0;
+    padding: 8px 15px;
+    font-weight: bold;
+}
+
+.btn:hover {
+    cursor: pointer;
+}
+
+.hidden {
+    display: none;
+}
+
+.btn-primary {
+    background: #8FB399;
+    border: 1px solid #8FB399;
+    color: white;
 }

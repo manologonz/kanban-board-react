@@ -1,6 +1,18 @@
 import React from "react";
-import { ITask, TaskDragStart, ColumnDropHandler, ColumnDragEnterHandler, ColumnDragOverHandler, ColumnDragLeaveHandler} from "../utils/types";
+
+// Components
+import {
+    ITask,
+    TaskDragStart,
+    ColumnDropHandler,
+    ColumnDragEnterHandler,
+    ColumnDragOverHandler,
+    ColumnDragLeaveHandler
+} from "../utils/types";
 import Task from "./task.component";
+
+// Icons
+import AddBoxIcon from '@mui/icons-material/AddBox';
 
 type KanbanColumnProps = {
     id: string;
@@ -10,6 +22,7 @@ type KanbanColumnProps = {
     handleColumnDragOver: ColumnDragOverHandler;
     handleColumnEnter: ColumnDragEnterHandler;
     handleColumnLeave: ColumnDragLeaveHandler
+    handleAddTask: (open: boolean) => void
     isOver: boolean
 };
 
@@ -22,7 +35,8 @@ const KanbanColumn: React.FC<KanbanColumnProps> = (props) => {
         handleColumnDragOver,
         handleColumnEnter,
         handleColumnLeave,
-        isOver
+        isOver,
+        handleAddTask
     } = props;
 
     const handleDragStart: TaskDragStart = (taskId, columnId) => {
@@ -34,7 +48,12 @@ const KanbanColumn: React.FC<KanbanColumnProps> = (props) => {
 
     return (
         <div className={`column${isOver ? " is-drag-over" : ""}`}>
-            <header>{name}</header>
+            <header>
+                <div className="far-away">
+                    {name}
+                    <AddBoxIcon className="add-task-button" onClick={() => {handleAddTask(true)}}/>
+                </div>
+            </header>
             <div
                 id={id}
                 onDrop={handleColumnDrop(id)}

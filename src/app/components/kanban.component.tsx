@@ -1,5 +1,5 @@
 import React from "react";
-import { v4 as uuid } from "uuid";
+// Utils
 import {
     IColumn,
     ColumnDropHandler,
@@ -13,14 +13,18 @@ import {
     ColumnDragOverHandler,
     ColumnDragLeaveHandler,
 } from "../utils/types";
+
+// Components
 import Divider from "./divider.component";
 import KanbanBody from "./kanban-body.component";
 import KanbanColumn from "./kanban-column.component";
 import KanbanContainer from "./kanban-container.component";
 import KanbanHeader from "./kanban-header.component";
+import {Modal, ModalBody, ModalFooter, ModalHeader} from "./modal.component";
 
 type KanbanState = {
     columns: IColumn[];
+    showAddTaskModal: boolean;
 };
 type KanbanProps = {};
 
@@ -29,6 +33,7 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
         super(props);
         this.state = {
             columns: [],
+            showAddTaskModal: false
         };
     }
 
@@ -41,7 +46,7 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
     boardHasChange = () => {
         const board = this.state;
         localStorage.setItem(this.storageKey, JSON.stringify(board));
-    }
+    };
 
     getColumnById: GetColumnById = (columnId) => {
         const columns = this.getColumns();
@@ -50,19 +55,19 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
             return undefined;
         }
 
-        return columns.find(({ id }) => id === columnId);
+        return columns.find(({id}) => id === columnId);
     };
 
     getTaskById: GetTaskById = (column, taskId) => {
         if (column.tasks.length <= 0) return undefined;
 
-        return column.tasks.find(({ id }) => taskId === id);
+        return column.tasks.find(({id}) => taskId === id);
     };
 
     deleteTaskFromColumn: DeleteTaskFromColumn = (column, taskId) => {
         if (column.tasks.length <= 0) return column;
 
-        const index = column.tasks.findIndex(({ id }) => id === taskId);
+        const index = column.tasks.findIndex(({id}) => id === taskId);
 
         if (index === -1) return column;
 
@@ -75,7 +80,7 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
     };
 
     addTaskToColumn: AddTaskToColumn = (column, task) => {
-        const exists = column.tasks.find(({ id }) => id === task.id);
+        const exists = column.tasks.find(({id}) => id === task.id);
 
         if (exists) return column;
 
@@ -88,16 +93,19 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
         const stateColumns = this.getColumns();
 
         updatedColumns.forEach((column) => {
-            const index = stateColumns.findIndex(({ id }) => column.id === id);
+            const index = stateColumns.findIndex(({id}) => column.id === id);
 
             if (index > -1) {
                 stateColumns[index] = column;
             }
         });
 
-        this.setState(() => ({ columns: stateColumns }), () => {
-            this.boardHasChange();
-        });
+        this.setState(
+            () => ({columns: stateColumns}),
+            () => {
+                this.boardHasChange();
+            }
+        );
     };
 
     handleColumnDrop: ColumnDropHandler = (columnId) => {
@@ -114,7 +122,6 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
                     originalColumn,
                     dragedTaskId
                 );
-
                 if (dragedTask) {
                     originalColumn = this.deleteTaskFromColumn(
                         originalColumn,
@@ -134,7 +141,7 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
 
     handleColumnDragOver: ColumnDragOverHandler = (columnId) => {
         return (event) => {
-            event.preventDefault()
+            event.preventDefault();
             let columns = this.getColumns();
             columns = columns.map<IColumn>((column) => {
                 if (column.id === columnId) {
@@ -148,19 +155,19 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
                 };
             });
 
-            this.setState(() => ({ columns }));
-        }
+            this.setState(() => ({columns}));
+        };
     };
 
     handleColumnEnter: ColumnDragEnterHandler = (columnId) => {
         return (event) => {
-            event.preventDefault()
+            event.preventDefault();
         };
     };
 
     handleColumLeave: ColumnDragLeaveHandler = (columnId) => {
         return (event) => {
-            event.preventDefault()
+            event.preventDefault();
             let columns = this.getColumns();
             columns = columns.map<IColumn>((column) => {
                 if (column.id === columnId) {
@@ -174,20 +181,24 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
                 };
             });
 
-            this.setState(() => ({ columns }));
-        }
-    }
+            this.setState(() => ({columns}));
+        };
+    };
 
     loadBoard = () => {
         const board = localStorage.getItem(this.storageKey);
-        if(!!board) {
+        if (!!board) {
             const parsedBoardState = JSON.parse(board) as KanbanState;
             this.setState(() => {
                 return {
-                    columns: parsedBoardState.columns
-                }
+                    columns: parsedBoardState.columns,
+                };
             });
         }
+    };
+
+    handleAddTask = (open: boolean) => {
+        this.setState({showAddTaskModal: open});
     }
 
     componentDidMount() {
@@ -197,24 +208,56 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
     render() {
         const columns = this.getColumns();
         return (
-            <KanbanContainer>
-                <KanbanHeader />
-                <Divider />
-                <KanbanBody>
-                    {columns.map((column) => {
-                        return (
-                            <KanbanColumn
-                                key={column.id}
-                                handleColumnDrop={this.handleColumnDrop}
-                                handleColumnDragOver={this.handleColumnDragOver}
-                                handleColumnEnter={this.handleColumnEnter}
-                                handleColumnLeave={this.handleColumLeave}
-                                {...column}
-                            />
-                        );
-                    })}
-                </KanbanBody>
-            </KanbanContainer>
+            <>
+                <Modal open={this.state.showAddTaskModal}>
+                    <ModalHeader>
+                        <p className="modal-title">New task</p>
+                    </ModalHeader>
+                    <ModalBody>
+                        <form>
+                            <div className="form-group">
+                                <label htmlFor="title">Title</label>
+                                <input value="something" type="text" name="title" className="form-control"/>
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="description">Description</label>
+                                <textarea name="description" className="form-control">
+                                </textarea>
+                            </div>
+                        </form>
+                    </ModalBody>
+                    <ModalFooter>
+                        <div className="d-flex justify-content-end">
+                            <button className="btn btn-primary" style={{marginRight: "10px"}}>Save</button>
+                            <button onClick={() => {
+                                this.handleAddTask(false)
+                            }} className="btn btn-secondary"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </ModalFooter>
+                </Modal>
+                <KanbanContainer>
+                    <KanbanHeader/>
+                    <Divider/>
+                    <KanbanBody>
+                        {columns.map((column) => {
+                            return (
+                                <KanbanColumn
+                                    key={column.id}
+                                    handleColumnDrop={this.handleColumnDrop}
+                                    handleColumnDragOver={this.handleColumnDragOver}
+                                    handleColumnEnter={this.handleColumnEnter}
+                                    handleColumnLeave={this.handleColumLeave}
+                                    handleAddTask={this.handleAddTask}
+                                    {...column}
+                                />
+                            );
+                        })}
+                    </KanbanBody>
+                </KanbanContainer>
+            </>
         );
     }
 }
