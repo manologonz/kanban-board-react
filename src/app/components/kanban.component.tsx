@@ -13,6 +13,8 @@ import {
     ColumnDragOverHandler,
     ColumnDragLeaveHandler,
 } from "../utils/types";
+import _ from "lodash";
+import {v4 as uuid} from "uuid";
 
 // Components
 import Divider from "./divider.component";
@@ -20,12 +22,23 @@ import KanbanBody from "./kanban-body.component";
 import KanbanColumn from "./kanban-column.component";
 import KanbanContainer from "./kanban-container.component";
 import KanbanHeader from "./kanban-header.component";
+import AddBoxIcon from '@mui/icons-material/AddBox';
 import {Modal, ModalBody, ModalFooter, ModalHeader} from "./modal.component";
 
 type KanbanState = {
     columns: IColumn[];
-    showAddTaskModal: boolean;
+    ShowModal: boolean;
+    ColumnIdInModal?: string,
+    TaskFormErrors: {
+        Title: string,
+        Description: string
+    },
+    TaskForm: {Title: string, Description: string},
+    ColumnForm: {Name: string},
+    ColumnFormErrors: {Name: string}
+    ModalType?: "TASK" | "COLUMN"
 };
+
 type KanbanProps = {};
 
 class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
@@ -33,7 +46,23 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
         super(props);
         this.state = {
             columns: [],
-            showAddTaskModal: false
+            ShowModal: false,
+            ColumnIdInModal: "",
+            TaskForm: {
+                Title: "",
+                Description: ""
+            },
+            TaskFormErrors: {
+                Title: "",
+                Description: ""
+            },
+            ColumnForm: {
+                Name: ""
+            },
+            ColumnFormErrors: {
+                Name: ""
+            },
+            ModalType: undefined
         };
     }
 
@@ -44,7 +73,7 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
     };
 
     boardHasChange = () => {
-        const board = this.state;
+        const board = {columns: this.state.columns};
         localStorage.setItem(this.storageKey, JSON.stringify(board));
     };
 
@@ -59,35 +88,47 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
     };
 
     getTaskById: GetTaskById = (column, taskId) => {
-        if (column.tasks.length <= 0) return undefined;
+        if (column.Tasks.length <= 0) return undefined;
 
-        return column.tasks.find(({id}) => taskId === id);
+        return column.Tasks.find(({id}) => taskId === id);
     };
 
     deleteTaskFromColumn: DeleteTaskFromColumn = (column, taskId) => {
-        if (column.tasks.length <= 0) return column;
+        if (column.Tasks.length <= 0) return column;
 
-        const index = column.tasks.findIndex(({id}) => id === taskId);
+        const index = column.Tasks.findIndex(({id}) => id === taskId);
 
         if (index === -1) return column;
 
-        const updatedTasks = column.tasks.slice();
+        const updatedTasks = column.Tasks.slice();
         updatedTasks.splice(index, 1);
 
-        column.tasks = [...updatedTasks];
+        column.Tasks = [...updatedTasks];
 
         return column;
     };
 
     addTaskToColumn: AddTaskToColumn = (column, task) => {
-        const exists = column.tasks.find(({id}) => id === task.id);
+        const exists = column.Tasks.find(({id}) => id === task.id);
 
         if (exists) return column;
 
-        column.tasks.push(task);
+        column.Tasks.push(task);
 
         return column;
     };
+
+    handleColumnRemove = (id: string, index: number) => {
+        let columnsArray = this.state.columns.slice();
+        const columnToRemove = columnsArray[index];
+
+        if(!!columnToRemove && columnToRemove.id === id) {
+            _.pullAt(columnsArray, index);
+            this.setState({columns: columnsArray}, () => {
+                this.boardHasChange();
+            });
+        }
+    }
 
     updateColumns: UpdateColumns = (updatedColumns) => {
         const stateColumns = this.getColumns();
@@ -131,8 +172,8 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
                         destinyColumn,
                         dragedTask
                     );
-                    originalColumn.isOver = false;
-                    destinyColumn.isOver = false;
+                    originalColumn.IsOver = false;
+                    destinyColumn.IsOver = false;
                     this.updateColumns([originalColumn, destinyColumn]);
                 }
             }
@@ -147,7 +188,7 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
                 if (column.id === columnId) {
                     return {
                         ...column,
-                        isOver: true,
+                        IsOver: true,
                     };
                 }
                 return {
@@ -173,7 +214,7 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
                 if (column.id === columnId) {
                     return {
                         ...column,
-                        isOver: false,
+                        IsOver: false,
                     };
                 }
                 return {
@@ -188,7 +229,9 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
     loadBoard = () => {
         const board = localStorage.getItem(this.storageKey);
         if (!!board) {
-            const parsedBoardState = JSON.parse(board) as KanbanState;
+            const parsedBoardState = JSON.parse(board) as {columns: IColumn[]};
+            console.log("storag col", parsedBoardState);
+
             this.setState(() => {
                 return {
                     columns: parsedBoardState.columns,
@@ -197,41 +240,252 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
         }
     };
 
-    handleAddTask = (open: boolean) => {
-        this.setState({showAddTaskModal: open});
+    handleModalFlag = (open: boolean, columnId?: string, type?: "TASK" | "COLUMN") => {
+        if(!open) {
+            this.setState({
+                ShowModal: false,
+                ModalType: undefined,
+                ColumnIdInModal: undefined,
+                TaskFormErrors: {
+                    Title: "",
+                    Description: ""
+                },
+                TaskForm: {
+                    Title: "",
+                    Description: ""
+                },
+                ColumnForm: {
+                    Name: ""
+                },
+                ColumnFormErrors: {
+                    Name: ""
+                }
+            });
+        } else {
+            this.setState({ ColumnIdInModal: columnId, ModalType: type}, () => {
+                this.setState({ShowModal: open,});
+            });
+        }
+    }
+
+    handleTaskFormFieldChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        this.setState({
+            TaskForm: {
+                ...this.state.TaskForm,
+            [e.target.name]: e.target.value
+            }
+        });
+    }
+
+    handleColumnFormFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        this.setState({
+            ColumnForm: {
+                ...this.state.ColumnForm,
+            [e.target.name]: e.target.value
+            }
+        });
+    }
+
+    handleTaskFormSubmit = () => {
+        let valid = true;
+        const columnsArray = this.state.columns.slice();
+        const columnIndex = _.findIndex(columnsArray, (col: IColumn) => col.id === this.state.ColumnIdInModal);
+        const formObj = _.cloneDeep(this.state.TaskForm);
+        const errors = {
+            Title: "",
+            Description: ""
+        }
+
+        // Validation
+        if(!formObj.Title) {
+            errors.Title = "This field is required";
+            valid = false;
+        }
+
+        if(!formObj.Description) {
+            errors.Description = "This field is required";
+            valid = false;
+        }
+
+        if(valid) {
+            if(columnIndex > -1) {
+                columnsArray[columnIndex].Tasks.push({
+                    id: uuid(),
+                    Title: this.state.TaskForm.Title,
+                    Description: this.state.TaskForm.Description
+                });
+
+                this.setState({
+                    columns: columnsArray,
+                    ShowModal: false,
+                    ColumnIdInModal: undefined,
+                    TaskFormErrors: {
+                        Title: "",
+                        Description: ""
+                    },
+                    TaskForm: {
+                        Title: "",
+                        Description: ""
+                    }
+                }, () => {this.boardHasChange()});
+            }
+        } else {
+            this.setState({
+                TaskFormErrors: {
+                    ...errors
+                }
+            });
+        }
+
+    }
+
+    handleColumnFormSubmit = () => {
+        let valid = true;
+        const columnsArray = this.state.columns.slice();
+        const formObj = _.cloneDeep(this.state.ColumnForm);
+        const errors = {
+            Name: "",
+        }
+
+        if(!formObj.Name) {
+            errors.Name = "This is a required field";
+            valid = false;
+        }
+
+        if(valid) {
+            columnsArray.push({
+                id: uuid(),
+                IsOver: false,
+                Name: this.state.ColumnForm.Name,
+                Tasks: []
+            });
+
+            this.setState({
+                columns: columnsArray,
+                ShowModal: false,
+                ColumnForm: {
+                    Name: ""
+                },
+                ColumnFormErrors: {
+                    Name: ""
+                }
+            }, () => {this.boardHasChange()});
+        } else {
+            this.setState({
+                ColumnFormErrors: errors
+            })
+        }
     }
 
     componentDidMount() {
         this.loadBoard();
     }
 
+
     render() {
         const columns = this.getColumns();
         return (
             <>
-                <Modal open={this.state.showAddTaskModal}>
+                <Modal open={this.state.ShowModal}>
                     <ModalHeader>
-                        <p className="modal-title">New task</p>
+                        <p className="modal-title">
+                            {
+                                this.state.ModalType === "COLUMN"
+                                    ? "New Column"
+                                    : this.state.ModalType === "TASK"
+                                        ? "New task"
+                                        : null
+                            }
+                        </p>
                     </ModalHeader>
                     <ModalBody>
-                        <form>
-                            <div className="form-group">
-                                <label htmlFor="title">Title</label>
-                                <input value="something" type="text" name="title" className="form-control"/>
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="description">Description</label>
-                                <textarea name="description" className="form-control">
-                                </textarea>
-                            </div>
-                        </form>
+                        {
+                            this.state.ModalType === "TASK" ? (
+                                <form>
+                                    <div className="form-group mb-5 input-container">
+                                        <label htmlFor="title">Title</label>
+                                        <input
+                                            value={this.state.TaskForm.Title}
+                                            type="text"
+                                            name="Title"
+                                            className="form-control"
+                                            onChange={this.handleTaskFormFieldChange}
+                                        />
+                                        {
+                                            !!this.state.TaskFormErrors.Title && (
+                                                <div className="input-error">
+                                                    <p>
+                                                        {this.state.TaskFormErrors.Title}
+                                                    </p>
+                                                </div>
+                                            )
+                                        }
+                                    </div>
+                                    <div className="form-group input-container">
+                                        <label htmlFor="description">Description</label>
+                                        <textarea
+                                            value={this.state.TaskForm.Description}
+                                            name="Description"
+                                            className="form-control"
+                                            onChange={this.handleTaskFormFieldChange}
+                                        >
+                                        </textarea>
+                                        {
+                                            !!this.state.TaskFormErrors.Description && (
+                                                <div className="input-error">
+                                                    <p>
+                                                        {this.state.TaskFormErrors.Description}
+                                                    </p>
+                                                </div>
+                                            )
+                                        }
+                                    </div>
+                                </form>
+                            ) : this.state.ModalType === "COLUMN" ? (
+                                    <form>
+                                        <div className="form-group mb-5 input-container">
+                                            <label htmlFor="title">Name</label>
+                                            <input
+                                                value={this.state.ColumnForm.Name}
+                                                type="text"
+                                                name="Name"
+                                                className="form-control"
+                                                onChange={this.handleColumnFormFieldChange}
+                                            />
+                                            {
+                                                !!this.state.ColumnFormErrors.Name && (
+                                                    <div className="input-error">
+                                                        <p>
+                                                            {this.state.ColumnFormErrors.Name}
+                                                        </p>
+                                                    </div>
+                                                )
+                                            }
+                                        </div>
+                                    </form>
+                                ) : null
+                        }
                     </ModalBody>
                     <ModalFooter>
                         <div className="d-flex justify-content-end">
-                            <button className="btn btn-primary" style={{marginRight: "10px"}}>Save</button>
-                            <button onClick={() => {
-                                this.handleAddTask(false)
-                            }} className="btn btn-secondary"
+                            <button
+                                className="btn btn-primary"
+                                style={{marginRight: "10px"}}
+                                onClick={() => {
+                                    if(this.state.ModalType === "TASK") {
+                                        this.handleTaskFormSubmit()
+                                    } else if(this.state.ModalType === "COLUMN") {
+                                        this.handleColumnFormSubmit();
+                                    }
+                                }}
+                             >
+                                Save
+                            </button>
+                            <button
+                                onClick={() => {
+                                    this.handleModalFlag(false)
+                                }}
+                                className="btn btn-secondary"
                             >
                                 Cancel
                             </button>
@@ -242,19 +496,27 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
                     <KanbanHeader/>
                     <Divider/>
                     <KanbanBody>
-                        {columns.map((column) => {
+                        {columns.map((column, index) => {
                             return (
                                 <KanbanColumn
                                     key={column.id}
+                                    index={index}
                                     handleColumnDrop={this.handleColumnDrop}
+                                    onRemoveColumnClick={this.handleColumnRemove}
                                     handleColumnDragOver={this.handleColumnDragOver}
                                     handleColumnEnter={this.handleColumnEnter}
                                     handleColumnLeave={this.handleColumLeave}
-                                    handleAddTask={this.handleAddTask}
+                                    onAddTaskButtonClick={this.handleModalFlag}
                                     {...column}
                                 />
                             );
                         })}
+                        <div className="add-column-button-container">
+                            <AddBoxIcon
+                                onClick={() => {this.handleModalFlag(true, undefined, "COLUMN")}}
+                                fontSize="large"
+                            />
+                        </div>
                     </KanbanBody>
                 </KanbanContainer>
             </>

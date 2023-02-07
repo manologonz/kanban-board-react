@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 
 // Components
 import {
@@ -12,32 +12,50 @@ import {
 import Task from "./task.component";
 
 // Icons
-import AddBoxIcon from '@mui/icons-material/AddBox';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox';
+import {IconButton} from "@mui/material";
+import {MoreVert} from "@mui/icons-material";
 
 type KanbanColumnProps = {
     id: string;
-    name: string;
-    tasks: ITask[];
+    index: number;
+    Name: string;
+    Tasks: ITask[];
     handleColumnDrop: ColumnDropHandler;
     handleColumnDragOver: ColumnDragOverHandler;
     handleColumnEnter: ColumnDragEnterHandler;
-    handleColumnLeave: ColumnDragLeaveHandler
-    handleAddTask: (open: boolean) => void
-    isOver: boolean
+    handleColumnLeave: ColumnDragLeaveHandler;
+    onAddTaskButtonClick: (open: boolean, columnId: string, type?: "COLUMN" | "TASK") => void;
+    onRemoveColumnClick: (id: string, index: number) => void;
+    IsOver: boolean;
 };
 
 const KanbanColumn: React.FC<KanbanColumnProps> = (props) => {
     const {
         id,
-        name,
-        tasks,
+        index,
+        Name,
+        Tasks,
         handleColumnDrop,
         handleColumnDragOver,
         handleColumnEnter,
         handleColumnLeave,
-        isOver,
-        handleAddTask
+        IsOver,
+        onAddTaskButtonClick,
+        onRemoveColumnClick
     } = props;
+
+    const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+
+    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+        setMenuAnchor(event.currentTarget);
+    };
+
+    const handleClose = () => {
+        setMenuAnchor(null);
+    };
 
     const handleDragStart: TaskDragStart = (taskId, columnId) => {
         return (event) => {
@@ -47,11 +65,49 @@ const KanbanColumn: React.FC<KanbanColumnProps> = (props) => {
     }
 
     return (
-        <div className={`column${isOver ? " is-drag-over" : ""}`}>
+        <div className={`column${IsOver ? " is-drag-over" : ""}`}>
             <header>
                 <div className="far-away">
-                    {name}
-                    <AddBoxIcon className="add-task-button" onClick={() => {handleAddTask(true)}}/>
+                    {Name}
+                    <div className="d-flex align-items-center justify-content-center">
+                        <IconButton
+                            aria-label="column-options"
+                            id="column-options-button"
+                            arial-controls={!!menuAnchor ? 'menu-options' : undefined}
+                            arial-expanded={!!menuAnchor ? 'true' : undefined}
+                            aria-haspopup="true"
+                            onClick={handleClick}
+                        >
+                            <MoreVert/>
+                        </IconButton>
+                        <Menu
+                            id="menu-options"
+                            MenuListProps={{
+                                'aria-labelledby': 'column-options-button'
+                            }}
+                            anchorEl={menuAnchor}
+                            open={!!menuAnchor}
+                            onClose={handleClose}
+                        >
+                            <MenuItem
+                                onClick={() => {
+                                    onAddTaskButtonClick(true, id, "TASK");
+                                    handleClose();
+                                }}
+                            >
+                               Add task
+                            </MenuItem>
+                            <MenuItem
+                                style={{color: "red"}}
+                                onClick={() => {
+                                    onRemoveColumnClick(id, index);
+                                    handleClose()
+                                }}
+                            >
+                               Remove Column
+                            </MenuItem>
+                        </Menu>
+                    </div>
                 </div>
             </header>
             <div
@@ -61,7 +117,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = (props) => {
                 onDragLeave={handleColumnLeave(id)}
                 className={`task-list`}
             >
-                {tasks.map((task) => {
+                {Tasks.map((task) => {
                     return (
                         <Task
                             key={task.id}

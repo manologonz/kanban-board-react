@@ -2,13 +2,13 @@ import React from "react";
 
 type TaksProps = {
     id: string;
-    title: string;
-    description: string;
+    Title: string;
+    Description: string;
     onDragStart: React.DragEventHandler;
     onDragEnter: React.DragEventHandler;
 };
 
-const Task: React.FC<TaksProps> = ({ id, title, description, onDragStart, onDragEnter}) => {
+const Task: React.FC<TaksProps> = ({ id, Title, Description, onDragStart, onDragEnter}) => {
     return (
         <div
             id={id}
@@ -17,8 +17,8 @@ const Task: React.FC<TaksProps> = ({ id, title, description, onDragStart, onDrag
             onDragEnter={onDragEnter}
             className="task"
         >
-            <section className="header">{title}</section>
-            <section className="description">{description}</section>
+            <section className="header">{Title}</section>
+            <section className="description">{Description}</section>
         </div>
     );
 };

@@ -1,14 +1,14 @@
 export interface ITask {
     id: string,
-    title: string,
-    description: string
+    Title: string,
+    Description: string
 }
 
 export interface IColumn {
     id: string,
-    isOver: boolean;
-    name: string;
-    tasks: ITask[];
+    IsOver: boolean;
+    Name: string;
+    Tasks: ITask[];
 }
 
 export type TaskDragStart = (taskId: string, columnId: string)  => React.DragEventHandler;

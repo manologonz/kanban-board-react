@@ -65,7 +65,26 @@
     color: black;
 }
 
+.kanban .column header .add-task-button  {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: black;
+    border-radius: 5px;
+    color: white;
+    padding: .3rem;
+    border: 1px solid black;
+}
+
 .kanban .column header .add-task-button:hover  {
+    cursor: pointer;
+}
+
+.kanban .column header .remove-column-button {
+    color: red;
+}
+
+.kanban .column header .remove-column-button:hover {
     cursor: pointer;
 }
 
@@ -228,4 +247,66 @@ textarea {
     background: #8FB399;
     border: 1px solid #8FB399;
     color: white;
+}
+
+.input-container {
+    position: relative;
+}
+
+.input-error {
+    position: absolute;
+    bottom: 0.2rem;
+    right: 0;
+    left: 0;
+}
+
+.input-error p {
+    margin: 0;
+    font-size: .8rem;
+    color: red;
+}
+
+.add-column-button-container {
+    padding: 5px;
+}
+
+.add-column-button-container:hover {
+    cursor: pointer;
+}
+
+.column-options-menu {
+    position: relative;
+    overflow: visible;
+}
+.column-options-menu .column-options-menu__more-icon:hover {
+    cursor: pointer;
+}
+
+.column-options-menu .column-options-menu__options-container {
+    position: absolute;
+    padding: 0;
+    top: 0;
+    left: 20px;
+    width: 200px;
+    background-color: white;
+    z-index: 1;
+    box-shadow: 2px 1px 3px gray;
+ }
+
+.column-options-menu .column-options-menu__potions-container--list {
+    padding: 0;
+    list-style: none;
+    margin: 0;
+    font-size: .9rem;
+    font-weight: normal;
+}
+
+.column-options-menu .column-options-menu__potions-container--list__option {
+   padding: .3rem .5rem .3rem .5rem;
+}
+
+.column-options-menu .column-options-menu__potions-container--list__option:hover {
+    background-color: #077FFF;
+    color: white;
+    cursor: pointer;
 }

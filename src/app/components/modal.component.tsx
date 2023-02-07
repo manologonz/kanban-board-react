@@ -1,5 +1,4 @@
 import React from "react";
-import Divider from "./divider.component";
 
 type ModalType = {
     open: boolean;
