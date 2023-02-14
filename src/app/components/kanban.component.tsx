@@ -12,6 +12,7 @@ import {
     ColumnDragEnterHandler,
     ColumnDragOverHandler,
     ColumnDragLeaveHandler,
+    TKanbanInfo,
 } from "../utils/types";
 import _ from "lodash";
 import {v4 as uuid} from "uuid";
@@ -24,19 +25,30 @@ import KanbanContainer from "./kanban-container.component";
 import KanbanHeader from "./kanban-header.component";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import {Modal, ModalBody, ModalFooter, ModalHeader} from "./modal.component";
+import {Description} from "@mui/icons-material";
 
 type KanbanState = {
     columns: IColumn[];
     ShowModal: boolean;
-    ColumnIdInModal?: string,
+    ColumnIdInModal?: string;
     TaskFormErrors: {
-        Title: string,
-        Description: string
-    },
-    TaskForm: {Title: string, Description: string},
-    ColumnForm: {Name: string},
-    ColumnFormErrors: {Name: string}
-    ModalType?: "TASK" | "COLUMN"
+        Title: string;
+        Description: string;
+    };
+    TaskForm: {Title: string; Description: string};
+    ColumnForm: {Name: string};
+    ColumnFormErrors: {Name: string};
+    KanbanNameForm: {
+        Name: string;
+        Description: string;
+    };
+    KanbanNameFormErrors: {
+        Name: string;
+        Description: string;
+    };
+    ModalType?: "TASK" | "COLUMN";
+    ShowKanbanNameEditModal: boolean;
+    KanbanInfo: TKanbanInfo;
 };
 
 type KanbanProps = {};
@@ -44,7 +56,10 @@ type KanbanProps = {};
 class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
     constructor(props: KanbanProps) {
         super(props);
+        const kanbanInfo = this.getKanbanInfo();
+
         this.state = {
+            KanbanInfo: kanbanInfo,
             columns: [],
             ShowModal: false,
             ColumnIdInModal: "",
@@ -62,11 +77,21 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
             ColumnFormErrors: {
                 Name: ""
             },
-            ModalType: undefined
+            KanbanNameForm: {
+                Name: "",
+                Description: ""
+            },
+            KanbanNameFormErrors: {
+                Name: "",
+                Description: ""
+            },
+            ModalType: undefined,
+            ShowKanbanNameEditModal: false
         };
     }
 
     storageKey = "board-data";
+    kanbanInfoStorageKey = "kanban-info";
 
     getColumns: GetColumnsFunction = () => {
         return [...this.state.columns];
@@ -230,7 +255,6 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
         const board = localStorage.getItem(this.storageKey);
         if (!!board) {
             const parsedBoardState = JSON.parse(board) as {columns: IColumn[]};
-            console.log("storag col", parsedBoardState);
 
             this.setState(() => {
                 return {
@@ -377,13 +401,85 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
         }
     }
 
+    getKanbanInfo = () => {
+       const data = localStorage.getItem(this.kanbanInfoStorageKey);
+       if(data) {
+           return JSON.parse(data) as TKanbanInfo;
+       }
+
+       return {Name: "Kanban Board", Description: "Board default description"};
+    }
+
+    handleKanbanNameEditClick = (show: boolean) => {
+        this.setState({
+            KanbanNameForm: {
+                ...this.state.KanbanInfo
+            },
+        }, () => {
+            this.setState({
+                ShowKanbanNameEditModal: show
+            });
+        });
+    }
+
+    handleKanbanFormInputChante = (e:  React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement>) => {
+        this.setState({
+            KanbanNameForm: {
+                ...this.state.KanbanNameForm,
+                [e.target.name]: e.target.value
+            }
+        })
+    }
+
+    handleKanbanFormSave = () => {
+        const formObj = this.state.KanbanNameForm;
+        const errorObj = {
+            Name: "",
+            Description: ""
+        }
+        let valid = true;
+
+        // validations
+        if(!formObj.Name) {
+            valid = false;
+            errorObj.Name = "This is a required field"
+            this.setState({
+                KanbanNameFormErrors: errorObj
+            });
+        }
+
+        if(!formObj.Description) {
+            formObj.Description = "";
+        }
+
+        if(valid) {
+            localStorage.setItem(this.kanbanInfoStorageKey, JSON.stringify(formObj));
+            this.setState( {
+                KanbanInfo: {
+                    Name: formObj.Name,
+                    Description: formObj.Description
+                },
+                ShowKanbanNameEditModal: false
+            }, () => {
+               this.setState({
+                   KanbanNameForm: {
+                       Name: "",
+                       Description: ""
+                   },
+                   KanbanNameFormErrors: {
+                       Name: "",
+                       Description: ""
+                   }
+               });
+            });
+        }
+    }
+
     componentDidMount() {
         this.loadBoard();
     }
 
-
     render() {
-        const columns = this.getColumns();
         return (
             <>
                 <Modal open={this.state.ShowModal}>
@@ -492,11 +588,75 @@ class KanbanBoard extends React.Component<KanbanProps, KanbanState> {
                         </div>
                     </ModalFooter>
                 </Modal>
+                <Modal open={this.state.ShowKanbanNameEditModal}>
+                    <ModalHeader>
+                        <p className="modal-title">
+                            Edit kanban
+                        </p>
+                    </ModalHeader>
+                    <ModalBody>
+                        <form>
+                            <div className="form-group mb-5 input-container">
+                                <label htmlFor="Name">Name</label>
+                                <input
+                                    className="form-control"
+                                    onChange={this.handleKanbanFormInputChante}
+                                    type="text"
+                                    name="Name"
+                                    value={this.state.KanbanNameForm.Name}
+                                />
+                                {
+                                    !!this.state.KanbanNameFormErrors.Name && (
+                                        <div className="input-error">
+                                            <p>
+                                                {this.state.KanbanNameFormErrors.Name}
+                                            </p>
+                                        </div>
+                                    )
+                                }
+                            </div>
+                            <div className="form-group mb-5 input-container">
+                                <label htmlFor="Description">Description</label>
+                                <textarea
+                                    onChange={this.handleKanbanFormInputChante}
+                                    maxLength={100}
+                                    rows={10}
+                                    name="Description"
+                                    value={this.state.KanbanNameForm.Description}
+                                >
+                                </textarea>
+                            </div>
+                        </form>
+                    </ModalBody>
+                    <ModalFooter>
+                         <div className="d-flex justify-content-end">
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                style={{marginRight: "10px"}}
+                                onClick={this.handleKanbanFormSave}
+                             >
+                                Save
+                            </button>
+                            <button
+                                onClick={() => {
+                                    this.handleKanbanNameEditClick(false)
+                                }}
+                                className="btn btn-secondary"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </ModalFooter>
+                </Modal>
                 <KanbanContainer>
-                    <KanbanHeader/>
+                    <KanbanHeader
+                        onEditClick={() => {this.handleKanbanNameEditClick(true)}}
+                        boardInfo={this.state.KanbanInfo}
+                    />
                     <Divider/>
                     <KanbanBody>
-                        {columns.map((column, index) => {
+                        {this.state.columns.map((column, index) => {
                             return (
                                 <KanbanColumn
                                     key={column.id}

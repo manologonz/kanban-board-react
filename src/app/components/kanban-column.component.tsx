@@ -71,6 +71,9 @@ const KanbanColumn: React.FC<KanbanColumnProps> = (props) => {
                     {Name}
                     <div className="d-flex align-items-center justify-content-center">
                         <IconButton
+                            classes={{
+                                root:"dots-menu"
+                             }}
                             aria-label="column-options"
                             id="column-options-button"
                             arial-controls={!!menuAnchor ? 'menu-options' : undefined}

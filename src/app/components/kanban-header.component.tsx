@@ -1,10 +1,28 @@
 import React from 'react'
+import EditIcon from '@mui/icons-material/Edit';
+import {TKanbanInfo} from "../utils/types";
 
-const KanbanHeader: React.FC = () => {
+
+type KanbanHeaderProps = {
+    boardInfo: TKanbanInfo;
+    onEditClick: () => void;
+}
+const KanbanHeader: React.FC<KanbanHeaderProps> = ({boardInfo, onEditClick}) => {
     return (
         <header className="header">
-            <h1 className="title">Kanban Board</h1>
-            <p className="description">Board description</p>
+            <div className="d-flex align-items-center justify-content-start">
+                <h1 className="title">
+                    {boardInfo.Name}
+                    <EditIcon
+                        onClick={onEditClick}
+                        className="edit-name"
+                        fontSize="large"
+                    />
+                </h1>
+            </div>
+            <p className="description">
+                {boardInfo.Description}
+            </p>
         </header>
     )
 }

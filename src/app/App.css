@@ -25,6 +25,10 @@
     color: var(--foreground-color);
 }
 
+.kanban .header .edit-name:hover {
+    cursor: pointer;
+}
+
 .kanban .header .description {
     font-size: 1.3rem;
     color: gray;
@@ -103,7 +107,7 @@
     width: 100%;
     min-height: 100px;
     background-color: white;
-    border-radius: 10px;
+    border-radius: 5px;
     box-shadow: 0 2px 4px gray;
 }
 
@@ -156,7 +160,7 @@
     width: 70%;
     max-height: 70%;
     max-width: 70%;
-    border-radius: 20px;
+    border-radius: 5px;
     padding: 10px;
     box-shadow: 0 2px 4px gray;
 }
@@ -309,4 +313,9 @@ textarea {
     background-color: #077FFF;
     color: white;
     cursor: pointer;
+}
+
+.dots-menu,
+.dots-menu button{
+    padding: 0 !important;
 }

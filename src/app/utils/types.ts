@@ -31,3 +31,8 @@ export type DeleteTaskFromColumn = (columnId: IColumn, taskId: string) => IColum
 export type AddTaskToColumn = (columnId: IColumn, taskId: ITask) => IColumn;
 
 export type UpdateColumns = (column: IColumn[]) => void;
+
+export type TKanbanInfo = {
+    Name: string;
+    Description: string;
+};
